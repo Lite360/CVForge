@@ -23,11 +23,16 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-3">
-        <button class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5">
-          <Eye class="w-4 h-4" /> Preview
+        <button @click="togglePreview" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5">
+          <Eye class="w-4 h-4" /> {{ showMobilePreview ? 'Edit' : 'Preview' }}
         </button>
-        <button class="px-4 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
-          <Download class="w-4 h-4" /> Export PDF
+        <button @click="exportPDF" :disabled="isExporting" class="px-4 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
+          <Download v-if="!isExporting" class="w-4 h-4" />
+          <LoaderCircle v-else class="w-4 h-4 animate-spin" />
+          {{ isExporting ? 'Generating...' : 'Export PDF' }}
+        </button>
+        <button @click="exportDOCX" class="px-4 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 hidden sm:flex">
+          <FileText class="w-4 h-4" /> DOCX
         </button>
       </div>
     </header>
@@ -50,7 +55,7 @@
       </aside>
 
       <!-- Column 2: Form Input Editor -->
-      <main class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-6 overflow-y-auto">
+      <main v-show="!showMobilePreview" class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-6 overflow-y-auto">
         
         <!-- Personal Information -->
         <div v-if="activeSection === 'personal'" class="space-y-4">
@@ -78,9 +83,15 @@
             </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-medium text-neutral-500 mb-1">Location:</label>
-            <input v-model="cv.basics.location" @input="triggerAutosave" type="text" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-neutral-500 mb-1">Location:</label>
+              <input v-model="cv.basics.location" @input="triggerAutosave" type="text" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-neutral-500 mb-1">Website / LinkedIn:</label>
+              <input v-model="cv.basics.url" @input="triggerAutosave" type="url" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+            </div>
           </div>
 
           <div>
@@ -101,22 +112,147 @@
           <div v-for="(job, index) in cv.work" :key="job.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3">
             <div class="flex justify-between items-center">
               <span class="text-xs font-bold text-brand-orange">Position #{{ index + 1 }}</span>
-              <button @click="removeWork(index)" class="text-red-500 hover:text-red-700 text-xs font-semibold">Remove</button>
+              <button @click="removeWork(index)" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                <Trash2 class="w-3 h-3" /> Remove
+              </button>
             </div>
             
             <div class="grid grid-cols-2 gap-3">
-              <input v-model="job.company" @input="triggerAutosave" placeholder="Company Name" type="text" class="px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg" />
-              <input v-model="job.position" @input="triggerAutosave" placeholder="Job Position" type="text" class="px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg" />
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Company:</label>
+                <input v-model="job.company" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Position:</label>
+                <input v-model="job.position" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
             </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Start Date:</label>
+                <input v-model="job.startDate" @input="triggerAutosave" type="month" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">End Date:</label>
+                <input v-model="job.endDate" @input="triggerAutosave" type="month" :disabled="job.current" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none disabled:opacity-50" />
+                <label class="flex items-center gap-1.5 mt-1.5 cursor-pointer">
+                  <input v-model="job.current" @change="triggerAutosave" type="checkbox" class="accent-brand-orange w-3.5 h-3.5" />
+                  <span class="text-xs text-neutral-500">Currently working here</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Highlights / Bullet points -->
+            <div>
+              <label class="block text-xs font-medium text-neutral-500 mb-1">Key Achievements:</label>
+              <div v-for="(highlight, hIndex) in job.highlights" :key="hIndex" class="flex items-center gap-2 mb-2">
+                <span class="text-neutral-400 text-xs">•</span>
+                <input v-model="job.highlights[hIndex]" @input="triggerAutosave" type="text" class="flex-grow px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" placeholder="Describe an achievement..." />
+                <button @click="job.highlights.splice(hIndex, 1); triggerAutosave()" class="text-red-400 hover:text-red-600 text-xs p-1"><X class="w-3 h-3" /></button>
+              </div>
+              <button @click="job.highlights.push(''); triggerAutosave()" class="text-xs text-brand-orange hover:underline flex items-center gap-1 mt-1">
+                <Plus class="w-3 h-3" /> Add Bullet Point
+              </button>
+            </div>
+          </div>
+
+          <div v-if="cv.work.length === 0" class="text-center py-8 text-neutral-400 text-sm">
+            No work experience added yet. Click "Add Job" to get started.
+          </div>
+        </div>
+
+        <!-- Education Editor -->
+        <div v-if="activeSection === 'education'" class="space-y-4">
+          <div class="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border pb-2">
+            <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Education</h2>
+            <button @click="addEducation" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+              <Plus class="w-3.5 h-3.5" /> Add Education
+            </button>
+          </div>
+
+          <div v-for="(edu, index) in cv.education" :key="edu.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-brand-orange">Education #{{ index + 1 }}</span>
+              <button @click="cv.education.splice(index, 1); triggerAutosave()" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                <Trash2 class="w-3 h-3" /> Remove
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Institution:</label>
+                <input v-model="edu.institution" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Degree Type:</label>
+                <input v-model="edu.studyType" @input="triggerAutosave" type="text" placeholder="e.g. Bachelor of Science" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-neutral-500 mb-1">Field of Study:</label>
+              <input v-model="edu.area" @input="triggerAutosave" type="text" placeholder="e.g. Computer Science" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Start Date:</label>
+                <input v-model="edu.startDate" @input="triggerAutosave" type="month" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">End Date:</label>
+                <input v-model="edu.endDate" @input="triggerAutosave" type="month" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div v-if="cv.education.length === 0" class="text-center py-8 text-neutral-400 text-sm">
+            No education entries yet. Click "Add Education" above.
+          </div>
+        </div>
+
+        <!-- Skills Editor -->
+        <div v-if="activeSection === 'skills'" class="space-y-4">
+          <div class="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border pb-2">
+            <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Skills &amp; Tools</h2>
+            <button @click="addSkill" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+              <Plus class="w-3.5 h-3.5" /> Add Skill
+            </button>
+          </div>
+
+          <div v-for="(skill, index) in cv.skills" :key="skill.id" class="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-dark-border">
+            <div class="flex-grow grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Skill Name:</label>
+                <input v-model="skill.name" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-neutral-500 mb-1">Level:</label>
+                <select v-model="skill.level" @change="triggerAutosave" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                  <option value="Expert">Expert</option>
+                </select>
+              </div>
+            </div>
+            <button @click="cv.skills.splice(index, 1); triggerAutosave()" class="text-red-400 hover:text-red-600 p-1.5 mt-4">
+              <Trash2 class="w-4 h-4" />
+            </button>
+          </div>
+
+          <div v-if="cv.skills.length === 0" class="text-center py-8 text-neutral-400 text-sm">
+            No skills added yet. Click "Add Skill" above.
           </div>
         </div>
 
       </main>
 
       <!-- Column 3: Live A4 Document Preview -->
-      <section class="hidden lg:flex flex-grow bg-neutral-200 dark:bg-neutral-900 p-8 overflow-y-auto items-start justify-center">
+      <section :class="[showMobilePreview ? 'flex' : 'hidden lg:flex']" class="flex-grow bg-neutral-200 dark:bg-neutral-900 p-8 overflow-y-auto items-start justify-center">
         <div class="w-[210mm] max-w-full">
-          <LiveA4Preview :cv="cv" />
+          <LiveA4Preview ref="previewRef" :cv="cv" />
         </div>
       </section>
 
@@ -126,13 +262,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ArrowLeft, Eye, Download, User, Briefcase, GraduationCap, Wrench, Plus } from '@lucide/vue'
+import { ArrowLeft, Eye, Download, FileText, User, Briefcase, GraduationCap, Wrench, Plus, Trash2, X, LoaderCircle } from '@lucide/vue'
+import html2pdf from 'html2pdf.js'
 import LiveA4Preview from '@/components/cv/LiveA4Preview.vue'
 import { defaultCVData, type CVData } from '@/types/cv'
 
 const cv = ref<CVData>({ ...defaultCVData })
 const activeSection = ref('personal')
 const saveStatus = ref<'saved' | 'saving' | 'error'>('saved')
+const isExporting = ref(false)
+const showMobilePreview = ref(false)
+const previewRef = ref<InstanceType<typeof LiveA4Preview> | null>(null)
 
 const sections = [
   { id: 'personal', name: 'Personal Details', icon: User },
@@ -141,6 +281,7 @@ const sections = [
   { id: 'skills', name: 'Skills & Tools', icon: Wrench },
 ]
 
+// --- Autosave ---
 let autosaveTimer: any = null
 const triggerAutosave = () => {
   saveStatus.value = 'saving'
@@ -150,6 +291,7 @@ const triggerAutosave = () => {
   }, 1000)
 }
 
+// --- Work Experience ---
 const addWorkExperience = () => {
   cv.value.work.push({
     id: Date.now().toString(),
@@ -166,5 +308,68 @@ const addWorkExperience = () => {
 const removeWork = (index: number) => {
   cv.value.work.splice(index, 1)
   triggerAutosave()
+}
+
+// --- Education ---
+const addEducation = () => {
+  cv.value.education.push({
+    id: Date.now().toString(),
+    institution: '',
+    area: '',
+    studyType: '',
+    startDate: '',
+    endDate: ''
+  })
+  triggerAutosave()
+}
+
+// --- Skills ---
+const addSkill = () => {
+  cv.value.skills.push({
+    id: Date.now().toString(),
+    name: '',
+    level: 'Intermediate'
+  })
+  triggerAutosave()
+}
+
+// --- Mobile Preview Toggle ---
+const togglePreview = () => {
+  showMobilePreview.value = !showMobilePreview.value
+}
+
+// --- PDF Export (PRD #24) ---
+const exportPDF = async () => {
+  const previewEl = previewRef.value?.$el as HTMLElement | undefined
+  if (!previewEl) return
+
+  isExporting.value = true
+
+  try {
+    const filename = cv.value.title
+      ? `${cv.value.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+      : 'CVForge_CV.pdf'
+
+    await html2pdf()
+      .set({
+        margin: 0,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      })
+      .from(previewEl)
+      .save()
+  } catch (err) {
+    console.error('PDF export failed:', err)
+  } finally {
+    isExporting.value = false
+  }
+}
+
+// --- DOCX Export placeholder (Premium feature per PRD) ---
+const exportDOCX = () => {
+  alert('DOCX export is a Premium feature. Upgrade your plan to unlock it.')
 }
 </script>
