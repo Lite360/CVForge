@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    @apply bg-white text-neutral-900 dark:bg-dark-bg dark:text-neutral-100 antialiased selection:bg-orange-500 selection:text-white;
+  }
+}
+
+.cv-document-preview {
+  font-family: 'Times New Roman', Times, serif;
+}
