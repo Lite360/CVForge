@@ -139,7 +139,7 @@
 import { useRouter } from 'vue-router'
 import { useTemplateStore } from '@/stores/templates'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Search, Sparkles, Crown, TrendingUp } from 'lucide-vue-next'
+import { Search, Sparkles, Crown, TrendingUp } from '@lucide/vue'
 
 const router = useRouter()
 const templateStore = useTemplateStore()

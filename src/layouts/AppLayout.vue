@@ -100,7 +100,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { FileText, Bell, Home, LayoutTemplate, User } from 'lucide-vue-next'
+import { FileText, Bell, Home, LayoutTemplate, User } from '@lucide/vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

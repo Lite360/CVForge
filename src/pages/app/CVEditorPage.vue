@@ -126,7 +126,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ArrowLeft, Eye, Download, User, Briefcase, GraduationCap, Wrench, Plus } from 'lucide-vue-next'
+import { ArrowLeft, Eye, Download, User, Briefcase, GraduationCap, Wrench, Plus } from '@lucide/vue'
 import LiveA4Preview from '@/components/cv/LiveA4Preview.vue'
 import { defaultCVData, type CVData } from '@/types/cv'
 

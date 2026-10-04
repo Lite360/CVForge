@@ -55,5 +55,5 @@
 </template>
 
 <script setup lang="ts">
-import { Sparkles, ArrowRight, UploadCloud, CheckCircle2 } from 'lucide-vue-next'
+import { Sparkles, ArrowRight, UploadCloud, CheckCircle2 } from '@lucide/vue'
 </script>

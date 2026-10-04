@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FileText, Menu, X } from 'lucide-vue-next'
+import { FileText, Menu, X } from '@lucide/vue'
 
 const mobileMenuOpen = ref(false)
 </script>

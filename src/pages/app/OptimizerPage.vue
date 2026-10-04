@@ -114,7 +114,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Sparkles, UploadCloud, Wand2, ArrowRight, Check, X } from 'lucide-vue-next'
+import { Sparkles, UploadCloud, Wand2, ArrowRight, Check, X } from '@lucide/vue'
 
 const router = useRouter()
 const step = ref<'upload' | 'analyzing' | 'report'>('upload')

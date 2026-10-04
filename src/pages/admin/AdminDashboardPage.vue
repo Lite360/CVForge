@@ -124,5 +124,5 @@
 </template>
 
 <script setup lang="ts">
-import { ShieldAlert, LayoutDashboard, Users, FileText, LayoutTemplate, CreditCard, Cpu, Sliders, LogOut } from 'lucide-vue-next'
+import { ShieldAlert, LayoutDashboard, Users, FileText, LayoutTemplate, CreditCard, Cpu, Sliders, LogOut } from '@lucide/vue'
 </script>

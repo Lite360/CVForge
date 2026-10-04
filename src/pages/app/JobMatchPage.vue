@@ -124,7 +124,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Target, FileText, Loader2, CheckCircle2, AlertCircle, Wand2 } from 'lucide-vue-next'
+import { Target, FileText, Loader2, CheckCircle2, AlertCircle, Wand2 } from '@lucide/vue'
 
 const selectedCvId = ref('')
 const jobDescription = ref('')

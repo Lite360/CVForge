@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { CheckCircle2, UploadCloud, AlertCircle, AlertTriangle, Wand2 } from 'lucide-vue-next'
+import { CheckCircle2, UploadCloud, AlertCircle, AlertTriangle, Wand2 } from '@lucide/vue'
 
 const isAnalyzing = ref(false)
 const analysisResult = ref<any>(null)

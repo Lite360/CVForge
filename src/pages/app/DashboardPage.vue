@@ -121,7 +121,7 @@
 import { ref, computed } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useAuthStore } from '@/stores/auth'
-import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Download, Trash2 } from 'lucide-vue-next'
+import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Download, Trash2 } from '@lucide/vue'
 
 const authStore = useAuthStore()
 const userName = computed(() => authStore.user?.fullName || 'User')

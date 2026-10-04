@@ -156,7 +156,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Camera, Crown, Zap, CheckCircle, AlertTriangle, LogOut, Trash2, User as UserIcon } from 'lucide-vue-next'
+import { Camera, Crown, Zap, CheckCircle, AlertTriangle, LogOut, Trash2, User as UserIcon } from '@lucide/vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

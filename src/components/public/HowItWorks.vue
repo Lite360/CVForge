@@ -71,5 +71,5 @@
 </template>
 
 <script setup lang="ts">
-import { FilePlus, Wand2, ArrowRight } from 'lucide-vue-next'
+import { FilePlus, Wand2, ArrowRight } from '@lucide/vue'
 </script>
