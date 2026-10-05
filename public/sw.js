@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cvforge-v1'
+const CACHE_NAME = 'cvforge-v2'
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -31,13 +31,26 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  // Never cache API endpoints or sensitive user CV data
+  // Never intercept API endpoints
   if (event.request.url.includes('/api/')) {
     return
   }
+  
+  // Network-First Strategy: Always get fresh content if online
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request)
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        return networkResponse
+      })
+      .catch(async () => {
+        // Fallback to cache if offline
+        const cachedResponse = await caches.match(event.request)
+        if (cachedResponse) return cachedResponse
+        
+        // If it's a page navigation request and offline, fallback to index.html
+        if (event.request.mode === 'navigate') {
+          return caches.match('/index.html')
+        }
+      })
   )
 })
