@@ -82,7 +82,8 @@ const routes = [
   {
     path: '/access/dashboard',
     name: 'AdminDashboard',
-    component: () => import('@/pages/admin/AdminDashboardPage.vue')
+    component: () => import('@/pages/admin/AdminDashboardPage.vue'),
+    meta: { requiresAdmin: true }
   }
 ]
 
@@ -101,6 +102,14 @@ router.beforeEach((to, _from, next) => {
   // Hydrate auth state from localStorage on first load
   if (!authStore.isAuthenticated) {
     authStore.hydrateFromStorage()
+  }
+
+  // Admin protected route: check for admin session token
+  if (to.meta.requiresAdmin) {
+    const adminToken = localStorage.getItem('cvforge_admin_token')
+    if (!adminToken) {
+      return next({ name: 'AdminLogin' })
+    }
   }
 
   // Protected routes: redirect to login if not authenticated
