@@ -31,6 +31,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/my-cvs',
+    name: 'MyCVs',
+    component: () => import('@/pages/app/DashboardPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/editor/:id',
     name: 'CVEditor',
     component: () => import('@/pages/app/CVEditorPage.vue'),

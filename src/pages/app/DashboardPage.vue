@@ -11,22 +11,22 @@
           <p class="text-neutral-500 text-sm mt-1">Ready to improve your CV?</p>
         </div>
         <div class="flex gap-3">
-          <router-link to="/editor/new" class="px-5 py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
+          <button @click="handleCreateCV" class="px-5 py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-2">
             <Plus class="w-4 h-4" />
             <span>Create New CV</span>
-          </router-link>
+          </button>
         </div>
       </div>
 
       <!-- Quick Action Cards Grid (PRD #10) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <router-link to="/editor/new" class="p-5 bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border hover:border-brand-orange transition-all group">
+        <button @click="handleCreateCV" class="text-left p-5 bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border hover:border-brand-orange transition-all group">
           <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-brand-orange/10 text-brand-orange flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
             <Plus class="w-5 h-5" />
           </div>
           <h3 class="font-bold text-sm text-neutral-900 dark:text-white">Create New CV</h3>
           <p class="text-xs text-neutral-500 mt-0.5">Start from scratch</p>
-        </router-link>
+        </button>
 
         <router-link to="/optimizer" class="p-5 bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border hover:border-amber-500 transition-all group">
           <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -57,28 +57,28 @@
       <div id="my-cvs" class="space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Recent CVs</h2>
-          <span class="text-xs text-neutral-500 font-medium">{{ cvList.length }} saved CVs</span>
+          <span class="text-xs text-neutral-500 font-medium">{{ cvStore.cvList.length }} saved CVs</span>
         </div>
 
-        <div v-if="cvList.length === 0" class="p-12 text-center bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border">
+        <div v-if="cvStore.cvList.length === 0" class="p-12 text-center bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border">
           <FileText class="w-10 h-10 text-neutral-400 mx-auto mb-3" />
           <h3 class="font-bold text-neutral-800 dark:text-neutral-200">No CVs created yet</h3>
           <p class="text-xs text-neutral-500 mt-1 mb-4">Create your first CV or optimize an existing document.</p>
-          <router-link to="/editor/new" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange text-white text-xs font-semibold rounded-lg">
+          <button @click="handleCreateCV" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange text-white text-xs font-semibold rounded-lg">
             <Plus class="w-4 h-4" /> Create CV Now
-          </router-link>
+          </button>
         </div>
 
         <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
-            v-for="cv in cvList" 
+            v-for="cv in cvStore.cvList" 
             :key="cv.id"
             class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-neutral-200 dark:border-dark-border shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow"
           >
             <div>
               <div class="flex items-center justify-between mb-3">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-brand-orange dark:bg-brand-orange/10">
-                  {{ cv.template }}
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-brand-orange dark:bg-brand-orange/10 capitalize">
+                  {{ cv.templateId }}
                 </span>
                 <span class="text-xs text-neutral-400">{{ cv.lastUpdated }}</span>
               </div>
@@ -92,9 +92,12 @@
                 Edit CV
               </router-link>
               <div class="flex items-center gap-2 text-neutral-400">
-                <button title="Duplicate" class="p-1 hover:text-neutral-700 dark:hover:text-white"><Copy class="w-4 h-4" /></button>
-                <button title="Export PDF" class="p-1 hover:text-neutral-700 dark:hover:text-white"><Download class="w-4 h-4" /></button>
-                <button title="Delete" class="p-1 hover:text-red-600"><Trash2 class="w-4 h-4" /></button>
+                <button title="Duplicate" @click="cvStore.duplicateCV(cv.id)" class="p-1 hover:text-neutral-700 dark:hover:text-white">
+                  <Copy class="w-4 h-4" />
+                </button>
+                <button title="Delete" @click="cvStore.deleteCV(cv.id)" class="p-1 hover:text-red-600">
+                  <Trash2 class="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -118,28 +121,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useAuthStore } from '@/stores/auth'
-import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Download, Trash2 } from '@lucide/vue'
+import { useCVStore } from '@/stores/cv'
+import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Trash2 } from '@lucide/vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
+const cvStore = useCVStore()
+
 const userName = computed(() => authStore.user?.fullName || 'User')
 
-const cvList = ref([
-  {
-    id: '1',
-    title: 'Senior Software Engineer CV',
-    template: 'Professional ATS',
-    status: 'saved',
-    lastUpdated: '2 hours ago'
-  },
-  {
-    id: '2',
-    title: 'Product Manager Resume 2026',
-    template: 'Executive',
-    status: 'draft',
-    lastUpdated: 'Yesterday'
-  }
-])
+onMounted(() => {
+  cvStore.loadFromStorage()
+})
+
+function handleCreateCV() {
+  const newCV = cvStore.createNewCV()
+  router.push(`/editor/${newCV.id}`)
+}
 </script>
