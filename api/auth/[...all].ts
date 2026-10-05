@@ -17,6 +17,8 @@ import { auth } from '../../src/lib/auth.js'
 export default async function handler(req, res) {
   // Convert Vercel's req/res to a standard Request object for Better Auth
   const url = new URL(req.url, `https://${req.headers.host || 'localhost:3000'}`)
+  
+  console.log(`[auth] ${req.method} ${url.toString()}`)
 
   const headers = new Headers()
   for (const [key, value] of Object.entries(req.headers)) {
@@ -55,7 +57,9 @@ export default async function handler(req, res) {
       res.end()
     }
   } catch (error) {
-    console.error('Auth handler error:', error)
-    res.status(500).json({ error: 'Authentication service error' })
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+    console.error('[auth] handler error:', message, stack)
+    res.status(500).json({ error: 'Authentication service error', detail: message })
   }
 }
