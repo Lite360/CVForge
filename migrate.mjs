@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS "account" (
   "accessTokenExpiresAt" timestamp,
   "refreshTokenExpiresAt" timestamp,
   scope text,
+  "idToken" text,
   password text,
   "createdAt" timestamp NOT NULL,
   "updatedAt" timestamp NOT NULL
@@ -52,9 +53,13 @@ CREATE TABLE IF NOT EXISTS "verification" (
   identifier text NOT NULL,
   value text NOT NULL,
   "expiresAt" timestamp NOT NULL,
-  "createdAt" timestamp NOT NULL,
-  "updatedAt" timestamp NOT NULL
+  "createdAt" timestamp,
+  "updatedAt" timestamp
 );
+
+ALTER TABLE "account" ADD COLUMN IF NOT EXISTS "idToken" text;
+ALTER TABLE "account" ADD COLUMN IF NOT EXISTS "password" text;
+ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "theme" text;
 `;
 
 async function run() {
