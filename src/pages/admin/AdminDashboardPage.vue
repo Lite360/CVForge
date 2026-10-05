@@ -390,7 +390,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   ShieldAlert, LayoutDashboard, Users, FileText, LayoutTemplate, 
@@ -411,6 +411,20 @@ const plans = ref(adminMockService.getPlans())
 const logs = ref(adminMockService.getLogs())
 
 const userSearchQuery = ref('')
+
+const loadRealData = async () => {
+  isRefreshing.value = true
+  const realData = await adminMockService.fetchRealAdminData()
+  stats.value = realData.stats
+  users.value = realData.users
+  templates.value = realData.templates
+  plans.value = realData.plans
+  isRefreshing.value = false
+}
+
+onMounted(() => {
+  loadRealData()
+})
 
 const filteredUsers = computed(() => {
   if (!userSearchQuery.value) return users.value
@@ -434,16 +448,7 @@ const toggleTemplatePremium = (id: string) => {
 }
 
 const refreshData = () => {
-  isRefreshing.value = true
-  setTimeout(() => {
-    stats.value = adminMockService.getStats()
-    users.value = adminMockService.getUsers()
-    cvs.value = adminMockService.getCVs()
-    templates.value = adminMockService.getTemplates()
-    plans.value = adminMockService.getPlans()
-    logs.value = adminMockService.getLogs()
-    isRefreshing.value = false
-  }, 400)
+  loadRealData()
 }
 
 const handleSignOut = () => {
