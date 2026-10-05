@@ -49,8 +49,11 @@ self.addEventListener('fetch', (event) => {
         
         // If it's a page navigation request and offline, fallback to index.html
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html')
+          const indexPage = await caches.match('/index.html')
+          if (indexPage) return indexPage
         }
+
+        return Response.error()
       })
   )
 })
