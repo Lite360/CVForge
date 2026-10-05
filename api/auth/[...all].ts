@@ -2,14 +2,22 @@
  * CVForge — Auth API Catch-All Route
  * 
  * Vercel Serverless Function that handles all Better Auth routes.
- * PRD §25, §49: /api/auth/[...all].ts
+ * Uses Vercel's [...all] catch-all convention to handle:
+ *   /api/auth/sign-up/email
+ *   /api/auth/sign-in/email
+ *   /api/auth/sign-in/social
+ *   /api/auth/callback/google
+ *   /api/auth/get-session
+ *   etc.
+ * 
+ * PRD §25, §49
  */
 import { auth } from '../../src/lib/auth.js'
 
 export default async function handler(req, res) {
   // Convert Vercel's req/res to a standard Request object for Better Auth
   const url = new URL(req.url, `https://${req.headers.host || 'localhost:3000'}`)
-  
+
   const headers = new Headers()
   for (const [key, value] of Object.entries(req.headers)) {
     if (value) headers.set(key, Array.isArray(value) ? value.join(', ') : value)
@@ -39,7 +47,7 @@ export default async function handler(req, res) {
 
     // Forward status and body
     res.status(response.status)
-    
+
     const responseBody = await response.text()
     if (responseBody) {
       res.send(responseBody)
