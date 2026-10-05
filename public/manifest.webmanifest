@@ -1,0 +1,28 @@
+{
+  "name": "CVForge — Professional CV Builder & AI Optimizer",
+  "short_name": "CVForge",
+  "description": "Create professional CVs, optimize them with AI, check ATS compatibility, and export as PDF or DOCX.",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#F97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -42,7 +42,7 @@
         </div>
         <div>
           <h3 class="text-xl font-bold text-neutral-900 dark:text-white">Analyzing Your CV Content...</h3>
-          <p class="text-neutral-500 text-sm mt-1">Extracting sections, scoring ATS compatibility, and generating improvements using Gemini AI.</p>
+          <p class="text-neutral-500 text-sm mt-1">Extracting sections, scoring ATS compatibility, and generating improvements using Ayo AI.</p>
         </div>
         <div class="w-64 mx-auto bg-neutral-200 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
           <div class="bg-brand-orange h-full w-2/3 animate-pulse"></div>

@@ -46,7 +46,7 @@
             <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Workflow B</span>
             <h3 class="text-2xl font-bold text-neutral-900 dark:text-white mt-1 mb-3">AI CV Optimizer</h3>
             <p class="text-neutral-600 dark:text-neutral-400 text-sm mb-6">
-              Upload your existing PDF or DOCX CV. Our Gemini AI analyzes your content and provides instant structured improvement suggestions.
+              Upload your existing PDF or DOCX CV. Our Ayo AI analyzes your content and provides instant structured improvement suggestions.
             </p>
 
             <ul class="space-y-3 text-sm text-neutral-700 dark:text-neutral-300">

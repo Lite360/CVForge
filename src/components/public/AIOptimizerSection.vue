@@ -103,7 +103,7 @@ const steps = [
   {
     number: '2',
     title: 'AI Analyzes Content',
-    description: 'Gemini AI extracts text, scores sections, and identifies improvements.'
+    description: 'Ayo AI extracts text, scores sections, and identifies improvements.'
   },
   {
     number: '3',

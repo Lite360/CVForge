@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     question: 'How does the AI CV Optimizer work?',
-    answer: 'Upload your existing CV (PDF or DOCX) and our Gemini AI analyzes every section. It identifies weak wording, missing keywords, and areas for improvement. You can accept, edit, or reject each suggestion individually — the AI never silently modifies your CV.'
+    answer: 'Upload your existing CV (PDF or DOCX) and our Ayo AI analyzes every section. It identifies weak wording, missing keywords, and areas for improvement. You can accept, edit, or reject each suggestion individually — the AI never silently modifies your CV.'
   },
   {
     question: 'What is an ATS and why does it matter?',
