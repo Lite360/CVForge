@@ -15,21 +15,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY
 
   const prompt = `Analyze and optimize the following CV content. Target job title/description: ${targetJob || 'General Professional Role'}.
-Provide structured feedback with overall score, summary improvements, specific bullet suggestions, missing keywords, and recommendations.
-Respond in valid JSON with schema:
-{
-  "overall_score": number,
-  "ats_score": number,
-  "summary": { "original": string, "suggested": string, "reason": string },
-  "experience_suggestions": [ { "original": string, "suggested": string, "reason": string } ],
-  "missing_keywords": string[],
-  "recommendations": string[]
-}`
+Provide structured feedback with overall score, summary improvements, specific bullet suggestions, missing keywords, and recommendations.`
 
   let providerUsed = 'fallback_mock'
   let aiOutput: any = null
 
-  // 1. Try Primary Provider: Gemini API
   if (geminiApiKey) {
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
@@ -54,7 +44,6 @@ Respond in valid JSON with schema:
     }
   }
 
-  // 2. Try Fallback Provider: OpenRouter API if Gemini failed or key missing
   if (!aiOutput && openRouterApiKey) {
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -86,7 +75,6 @@ Respond in valid JSON with schema:
     }
   }
 
-  // 3. Fallback mock if both API keys are absent or failed (Local Safe Fallback)
   if (!aiOutput) {
     const originalSummary = cvContent.basics?.summary || 'Experienced professional looking for growth.'
     aiOutput = {
