@@ -396,7 +396,7 @@ import {
   ShieldAlert, LayoutDashboard, Users, FileText, LayoutTemplate, 
   CreditCard, Cpu, LogOut, Search, CheckCircle2, AlertCircle, 
   ToggleLeft, ToggleRight, RefreshCw 
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { adminMockService } from '@/services/admin/adminMockService'
 
 const router = useRouter()
