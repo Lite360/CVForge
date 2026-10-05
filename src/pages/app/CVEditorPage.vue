@@ -2,35 +2,70 @@
   <div class="h-screen flex flex-col bg-neutral-100 dark:bg-dark-bg font-ui">
     
     <!-- Top Action Bar -->
-    <header class="bg-white dark:bg-dark-card border-b border-neutral-200 dark:border-dark-border px-4 py-3 flex items-center justify-between z-20">
+    <header class="bg-white dark:bg-dark-card border-b border-neutral-200 dark:border-dark-border px-4 py-3 flex items-center justify-between z-20 shadow-sm">
       <div class="flex items-center gap-3">
-        <router-link to="/dashboard" class="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-lg">
+        <router-link to="/dashboard" title="Back to Dashboard" class="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-lg transition-colors">
           <ArrowLeft class="w-5 h-5" />
         </router-link>
+        
         <input 
-          v-model="cv.title" 
+          v-model="cvTitle" 
+          @input="triggerAutosave" 
           type="text" 
+          placeholder="CV Title..."
           class="font-bold text-base bg-transparent text-neutral-900 dark:text-white border-b border-transparent hover:border-neutral-300 focus:border-brand-orange focus:outline-none px-1 py-0.5"
         />
         
         <!-- Autosave Status Badge -->
         <span class="inline-flex items-center gap-1.5 text-xs text-neutral-400 pl-3 border-l border-neutral-200 dark:border-dark-border">
           <span v-if="saveStatus === 'saving'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span v-else class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span v-else-if="saveStatus === 'saved'" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span v-else class="w-2 h-2 rounded-full bg-red-500"></span>
           <span class="capitalize">{{ saveStatus }}</span>
         </span>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-3">
-        <button @click="togglePreview" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5">
+        <!-- Template Picker Dropdown -->
+        <div class="relative">
+          <button 
+            @click="showTemplateDropdown = !showTemplateDropdown"
+            class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 transition"
+          >
+            <LayoutTemplate class="w-4 h-4 text-brand-orange" />
+            <span class="capitalize">{{ currentTemplateName }}</span>
+            <ChevronDown class="w-3.5 h-3.5 text-neutral-400" />
+          </button>
+
+          <div 
+            v-if="showTemplateDropdown" 
+            class="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl shadow-xl z-50 p-2 space-y-1"
+          >
+            <div class="text-[10px] font-bold uppercase tracking-wider text-neutral-400 px-3 py-1">Select Template</div>
+            <button
+              v-for="tmpl in templateStore.templates"
+              :key="tmpl.id"
+              @click="changeTemplate(tmpl.id)"
+              :class="[cv.templateId === tmpl.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
+              class="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors"
+            >
+              <span>{{ tmpl.name }}</span>
+              <Crown v-if="tmpl.isPremium" class="w-3.5 h-3.5 text-amber-500" />
+            </button>
+          </div>
+        </div>
+
+        <button @click="togglePreview" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 md:hidden">
           <Eye class="w-4 h-4" /> {{ showMobilePreview ? 'Edit' : 'Preview' }}
         </button>
+
         <button @click="exportPDF" :disabled="isExporting" class="px-4 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
           <Download v-if="!isExporting" class="w-4 h-4" />
           <LoaderCircle v-else class="w-4 h-4 animate-spin" />
           {{ isExporting ? 'Generating...' : 'Export PDF' }}
         </button>
+
         <button @click="exportDOCX" class="px-4 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 hidden sm:flex">
           <FileText class="w-4 h-4" /> DOCX
         </button>
@@ -41,13 +76,13 @@
     <div class="flex-grow flex overflow-hidden">
       
       <!-- Column 1: CV Navigation Sections Sidebar -->
-      <aside class="w-48 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-3 hidden md:flex flex-col gap-1 overflow-y-auto">
+      <aside class="w-52 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-3 hidden md:flex flex-col gap-1 overflow-y-auto">
         <button 
           v-for="section in sections" 
           :key="section.id"
           @click="activeSection = section.id"
-          :class="[activeSection === section.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
-          class="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2.5 transition-colors"
+          :class="[activeSection === section.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold shadow-xs' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
+          class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs flex items-center gap-3 transition-colors"
         >
           <component :is="section.icon" class="w-4 h-4" />
           <span>{{ section.name }}</span>
@@ -55,7 +90,7 @@
       </aside>
 
       <!-- Column 2: Form Input Editor -->
-      <main v-show="!showMobilePreview" class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-6 overflow-y-auto">
+      <main v-show="!showMobilePreview" class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-6 overflow-y-auto space-y-6">
         
         <!-- Personal Information -->
         <div v-if="activeSection === 'personal'" class="space-y-4">
@@ -95,8 +130,13 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-neutral-500 mb-1">Professional Summary:</label>
-            <textarea v-model="cv.basics.summary" @input="triggerAutosave" rows="4" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none"></textarea>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-neutral-500">Professional Summary:</label>
+              <button @click="openAISummaryModal" class="text-xs text-brand-orange font-bold flex items-center gap-1 hover:underline">
+                <Sparkles class="w-3.5 h-3.5" /> AI Enhance
+              </button>
+            </div>
+            <textarea v-model="cv.basics.summary" @input="triggerAutosave" rows="5" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none"></textarea>
           </div>
         </div>
 
@@ -104,16 +144,16 @@
         <div v-if="activeSection === 'work'" class="space-y-4">
           <div class="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border pb-2">
             <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Work Experience</h2>
-            <button @click="addWorkExperience" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+            <button @click="addWorkExperience" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1 hover:bg-brand-orange-hover transition">
               <Plus class="w-3.5 h-3.5" /> Add Job
             </button>
           </div>
 
-          <div v-for="(job, index) in cv.work" :key="job.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3">
+          <div v-for="(job, index) in cv.work" :key="job.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3 bg-neutral-50/50 dark:bg-dark-bg/50">
             <div class="flex justify-between items-center">
               <span class="text-xs font-bold text-brand-orange">Position #{{ index + 1 }}</span>
               <button @click="removeWork(index)" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
-                <Trash2 class="w-3 h-3" /> Remove
+                <Trash2 class="w-3.5 h-3.5" /> Remove
               </button>
             </div>
             
@@ -143,13 +183,13 @@
               </div>
             </div>
 
-            <!-- Highlights / Bullet points -->
+            <!-- Key Achievements -->
             <div>
               <label class="block text-xs font-medium text-neutral-500 mb-1">Key Achievements:</label>
               <div v-for="(highlight, hIndex) in job.highlights" :key="hIndex" class="flex items-center gap-2 mb-2">
                 <span class="text-neutral-400 text-xs">•</span>
                 <input v-model="job.highlights[hIndex]" @input="triggerAutosave" type="text" class="flex-grow px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" placeholder="Describe an achievement..." />
-                <button @click="job.highlights.splice(hIndex, 1); triggerAutosave()" class="text-red-400 hover:text-red-600 text-xs p-1"><X class="w-3 h-3" /></button>
+                <button @click="job.highlights.splice(hIndex, 1); triggerAutosave()" class="text-red-400 hover:text-red-600 text-xs p-1"><X class="w-3.5 h-3.5" /></button>
               </div>
               <button @click="job.highlights.push(''); triggerAutosave()" class="text-xs text-brand-orange hover:underline flex items-center gap-1 mt-1">
                 <Plus class="w-3 h-3" /> Add Bullet Point
@@ -166,16 +206,16 @@
         <div v-if="activeSection === 'education'" class="space-y-4">
           <div class="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border pb-2">
             <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Education</h2>
-            <button @click="addEducation" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+            <button @click="addEducation" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1 hover:bg-brand-orange-hover transition">
               <Plus class="w-3.5 h-3.5" /> Add Education
             </button>
           </div>
 
-          <div v-for="(edu, index) in cv.education" :key="edu.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3">
+          <div v-for="(edu, index) in cv.education" :key="edu.id" class="p-4 rounded-xl border border-neutral-200 dark:border-dark-border space-y-3 bg-neutral-50/50 dark:bg-dark-bg/50">
             <div class="flex justify-between items-center">
               <span class="text-xs font-bold text-brand-orange">Education #{{ index + 1 }}</span>
               <button @click="cv.education.splice(index, 1); triggerAutosave()" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
-                <Trash2 class="w-3 h-3" /> Remove
+                <Trash2 class="w-3.5 h-3.5" /> Remove
               </button>
             </div>
 
@@ -216,12 +256,12 @@
         <div v-if="activeSection === 'skills'" class="space-y-4">
           <div class="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border pb-2">
             <h2 class="text-lg font-bold text-neutral-900 dark:text-white">Skills &amp; Tools</h2>
-            <button @click="addSkill" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+            <button @click="addSkill" class="px-3 py-1 bg-brand-orange text-white text-xs font-semibold rounded-lg flex items-center gap-1 hover:bg-brand-orange-hover transition">
               <Plus class="w-3.5 h-3.5" /> Add Skill
             </button>
           </div>
 
-          <div v-for="(skill, index) in cv.skills" :key="skill.id" class="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-dark-border">
+          <div v-for="(skill, index) in cv.skills" :key="skill.id" class="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-dark-border bg-neutral-50/50 dark:bg-dark-bg/50">
             <div class="flex-grow grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-500 mb-1">Skill Name:</label>
@@ -261,17 +301,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ArrowLeft, Eye, Download, FileText, User, Briefcase, GraduationCap, Wrench, Plus, Trash2, X, LoaderCircle } from '@lucide/vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, Eye, Download, FileText, User, Briefcase, GraduationCap, Wrench, Plus, Trash2, X, LoaderCircle, LayoutTemplate, ChevronDown, Crown, Sparkles } from '@lucide/vue'
 import html2pdf from 'html2pdf.js'
 import LiveA4Preview from '@/components/cv/LiveA4Preview.vue'
 import { defaultCVData, type CVData } from '@/types/cv'
+import { useCVStore } from '@/stores/cv'
+import { useTemplateStore } from '@/stores/templates'
+
+const route = useRoute()
+const router = useRouter()
+const cvStore = useCVStore()
+const templateStore = useTemplateStore()
 
 const cv = ref<CVData>({ ...defaultCVData })
+const cvTitle = computed({
+  get: () => cv.value.title,
+  set: (val: string) => { cv.value.title = val }
+})
+
 const activeSection = ref('personal')
 const saveStatus = ref<'saved' | 'saving' | 'error'>('saved')
 const isExporting = ref(false)
 const showMobilePreview = ref(false)
+const showTemplateDropdown = ref(false)
 const previewRef = ref<InstanceType<typeof LiveA4Preview> | null>(null)
 
 const sections = [
@@ -281,14 +335,106 @@ const sections = [
   { id: 'skills', name: 'Skills & Tools', icon: Wrench },
 ]
 
+const currentTemplateName = computed(() => {
+  const tmpl = templateStore.templates.find(t => t.id === cv.value.templateId)
+  return tmpl ? tmpl.name : 'Professional ATS'
+})
+
+onMounted(() => {
+  cvStore.loadFromStorage()
+  const cvId = route.params.id as string
+
+  if (cvId === 'new') {
+    const templateQuery = route.query.template as string
+    const newCV = cvStore.createNewCV('My Professional CV', templateQuery || 'professional-ats')
+    cv.value = {
+      id: newCV.id,
+      title: newCV.title,
+      templateId: newCV.templateId,
+      basics: { ...defaultCVData.basics },
+      work: [...defaultCVData.work],
+      education: [...defaultCVData.education],
+      skills: [...defaultCVData.skills]
+    }
+  } else {
+    const existing = cvStore.getCVById(cvId)
+    if (existing) {
+      cv.value = {
+        id: existing.id,
+        title: existing.title,
+        templateId: existing.templateId || 'professional-ats',
+        basics: existing.personalInfo ? {
+          name: existing.personalInfo.fullName,
+          label: existing.personalInfo.jobTitle,
+          email: existing.personalInfo.email,
+          phone: existing.personalInfo.phone,
+          location: existing.personalInfo.location,
+          url: existing.personalInfo.linkedin || existing.personalInfo.website || '',
+          summary: existing.personalInfo.summary
+        } : defaultCVData.basics,
+        work: existing.workExperiences ? existing.workExperiences.map(w => ({
+          id: w.id,
+          company: w.company,
+          position: w.position,
+          startDate: w.startDate,
+          endDate: w.endDate,
+          current: w.current,
+          highlights: [w.description]
+        })) : defaultCVData.work,
+        education: existing.education ? existing.education.map(e => ({
+          id: e.id,
+          institution: e.institution,
+          area: e.fieldOfStudy,
+          studyType: e.degree,
+          startDate: e.startDate,
+          endDate: e.endDate
+        })) : defaultCVData.education,
+        skills: existing.skills ? existing.skills.map(s => ({
+          id: s.id,
+          name: s.name,
+          level: s.level
+        })) : defaultCVData.skills
+      }
+    }
+  }
+})
+
 // --- Autosave ---
 let autosaveTimer: any = null
 const triggerAutosave = () => {
   saveStatus.value = 'saving'
   clearTimeout(autosaveTimer)
   autosaveTimer = setTimeout(() => {
+    if (cv.value.id) {
+      const idx = cvStore.cvList.findIndex(c => c.id === cv.value.id)
+      if (idx !== -1) {
+        cvStore.cvList[idx].title = cv.value.title
+        cvStore.cvList[idx].templateId = cv.value.templateId
+        cvStore.cvList[idx].lastUpdated = 'Just now'
+        cvStore.cvList[idx].personalInfo = {
+          fullName: cv.value.basics.name,
+          jobTitle: cv.value.basics.label,
+          email: cv.value.basics.email,
+          phone: cv.value.basics.phone,
+          location: cv.value.basics.location,
+          linkedin: cv.value.basics.url,
+          summary: cv.value.basics.summary
+        }
+        cvStore.saveToStorage()
+      }
+    }
     saveStatus.value = 'saved'
-  }, 1000)
+  }, 800)
+}
+
+function changeTemplate(templateId: string) {
+  cv.value.templateId = templateId
+  showTemplateDropdown.value = false
+  triggerAutosave()
+}
+
+function openAISummaryModal() {
+  router.push('/optimizer')
 }
 
 // --- Work Experience ---
@@ -368,7 +514,7 @@ const exportPDF = async () => {
   }
 }
 
-// --- DOCX Export placeholder (Premium feature per PRD) ---
+// --- DOCX Export ---
 const exportDOCX = () => {
   alert('DOCX export is a Premium feature. Upgrade your plan to unlock it.')
 }

@@ -4,6 +4,7 @@
  * PRD §25: Authenticated APIs must derive user identity from server-side session.
  * PRD §49: /api/users/me.ts
  */
+import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { auth } from '../../src/lib/auth.js'
 import pg from 'pg'
 
@@ -12,17 +13,24 @@ const pool = new pg.Pool({
   ssl: { rejectUnauthorized: false }
 })
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
     // Get session from Better Auth (PRD §25: derive user from session)
-    const url = new URL(req.url, `https://${req.headers.host || 'localhost:3000'}`)
+    const host = req.headers.host || 'localhost:3000'
+    const reqUrl = req.url || '/api/users/me'
+    const url = new URL(reqUrl, `https://${host}`)
     const headers = new Headers()
+    
     for (const [key, value] of Object.entries(req.headers)) {
-      if (value) headers.set(key, Array.isArray(value) ? value.join(', ') : value)
+      if (typeof value === 'string') {
+        headers.set(key, value)
+      } else if (Array.isArray(value)) {
+        headers.set(key, value.join(', '))
+      }
     }
 
     const request = new Request(url.toString(), { method: 'GET', headers })
