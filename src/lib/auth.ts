@@ -5,15 +5,12 @@
  * PRD §25: Better Auth with Google + GitHub OAuth
  */
 import { betterAuth } from 'better-auth'
-import pg from 'pg'
-
-const { Pool } = pg
+import { Pool } from '@neondatabase/serverless'
 
 export const auth = betterAuth({
-  // Database: Neon PostgreSQL (PRD §26)
+  // Database: Neon PostgreSQL via serverless driver (HTTP-based, works in serverless)
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
   }),
 
   // Email + Password authentication
