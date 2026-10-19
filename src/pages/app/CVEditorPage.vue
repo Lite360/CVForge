@@ -317,8 +317,11 @@
       </main>
 
       <!-- Column 3: Live A4 Document Preview -->
-      <section :class="[showMobilePreview ? 'flex' : 'hidden lg:flex']" class="flex-grow bg-neutral-200 dark:bg-neutral-900 p-8 overflow-y-auto items-start justify-center">
-        <div class="w-[210mm] max-w-full">
+      <section 
+        :class="[showMobilePreview ? 'flex' : 'hidden lg:flex']" 
+        class="flex-grow bg-neutral-200 dark:bg-neutral-900 p-2 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden items-start justify-center w-full"
+      >
+        <div class="w-full max-w-[210mm] mx-auto">
           <LiveA4Preview ref="previewRef" :cv="cv" />
         </div>
       </section>
