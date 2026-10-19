@@ -27,7 +27,7 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-1.5 sm:gap-3">
-        <!-- Template Picker Dropdown -->
+        <!-- Template Picker Dropdown / Bottom Sheet on Mobile -->
         <div class="relative">
           <button 
             @click="showTemplateDropdown = !showTemplateDropdown"
@@ -39,21 +39,40 @@
             <ChevronDown class="w-3 h-3 text-neutral-400" />
           </button>
 
+          <!-- Backdrop on mobile -->
           <div 
             v-if="showTemplateDropdown" 
-            class="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl shadow-xl z-50 p-2 space-y-1"
+            @click="showTemplateDropdown = false" 
+            class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 sm:hidden"
+          ></div>
+
+          <!-- Template Selection Drawer / Dropdown -->
+          <div 
+            v-if="showTemplateDropdown" 
+            class="fixed inset-x-0 bottom-0 max-h-[75vh] sm:max-h-96 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-full sm:w-64 bg-white dark:bg-dark-card border-t sm:border border-neutral-200 dark:border-dark-border rounded-t-2xl sm:rounded-xl shadow-2xl z-50 p-3 sm:p-2 space-y-1 overflow-y-auto"
           >
-            <div class="text-[10px] font-bold uppercase tracking-wider text-neutral-400 px-3 py-1">Select Template</div>
-            <button
-              v-for="tmpl in templateStore.templates"
-              :key="tmpl.id"
-              @click="changeTemplate(tmpl.id)"
-              :class="[cv.templateId === tmpl.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
-              class="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors"
-            >
-              <span>{{ tmpl.name }}</span>
-              <Crown v-if="tmpl.isPremium" class="w-3.5 h-3.5 text-amber-500" />
-            </button>
+            <div class="flex items-center justify-between sm:justify-start px-3 py-1.5 border-b border-neutral-100 dark:border-dark-border sm:border-0">
+              <span class="text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-500 sm:text-neutral-400">Select Template Format</span>
+              <button @click="showTemplateDropdown = false" class="sm:hidden text-neutral-400 hover:text-neutral-600 p-1">
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+
+            <div class="space-y-1 pt-1">
+              <button
+                v-for="tmpl in templateStore.templates"
+                :key="tmpl.id"
+                @click="changeTemplate(tmpl.id)"
+                :class="[cv.templateId === tmpl.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
+                class="w-full text-left px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs flex items-center justify-between transition-colors"
+              >
+                <div class="flex flex-col">
+                  <span>{{ tmpl.name }}</span>
+                  <span class="text-[10px] text-neutral-400 font-normal sm:hidden">{{ tmpl.features.slice(0, 2).join(' • ') }}</span>
+                </div>
+                <Crown v-if="tmpl.isPremium" class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              </button>
+            </div>
           </div>
         </div>
 
