@@ -66,6 +66,11 @@
           {{ isExporting ? 'Generating...' : 'Export PDF' }}
         </button>
 
+        <button @click="openPublicShare" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 transition">
+          <Share2 class="w-4 h-4 text-neutral-500" />
+          <span class="hidden sm:inline">Share</span>
+        </button>
+
         <button @click="exportDOCX" class="px-4 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 hidden sm:flex">
           <FileText class="w-4 h-4" /> DOCX
         </button>
@@ -303,7 +308,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Eye, Download, FileText, User, Briefcase, GraduationCap, Wrench, Plus, Trash2, X, LoaderCircle, LayoutTemplate, ChevronDown, Crown, Sparkles } from '@lucide/vue'
+import { ArrowLeft, Eye, Download, FileText, User, Briefcase, GraduationCap, Wrench, Plus, Trash2, X, LoaderCircle, LayoutTemplate, ChevronDown, Crown, Sparkles, Share2 } from '@lucide/vue'
 import html2pdf from 'html2pdf.js'
 import LiveA4Preview from '@/components/cv/LiveA4Preview.vue'
 import { defaultCVData, type CVData } from '@/types/cv'
@@ -314,6 +319,12 @@ const route = useRoute()
 const router = useRouter()
 const cvStore = useCVStore()
 const templateStore = useTemplateStore()
+
+const openPublicShare = () => {
+  if (cv.value.id) {
+    window.open(`/cv/${cv.value.id}`, '_blank')
+  }
+}
 
 const cv = ref<CVData>({ ...defaultCVData })
 const cvTitle = computed({

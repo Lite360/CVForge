@@ -8,6 +8,11 @@ const routes = [
     name: 'Home',
     component: () => import('@/pages/public/LandingPage.vue')
   },
+  {
+    path: '/cv/:id',
+    name: 'PublicCV',
+    component: () => import('@/pages/public/PublicCVPage.vue')
+  },
 
   // ─── Auth ──────────────────────────────────
   {
