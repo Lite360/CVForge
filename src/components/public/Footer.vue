@@ -54,11 +54,11 @@
         <div>
           <h3 class="text-xs font-semibold text-neutral-200 uppercase tracking-wider mb-4">Legal</h3>
           <ul class="space-y-2.5 text-sm">
-            <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Terms &amp; Conditions</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Cookie Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Refund Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Acceptable Use Policy</a></li>
+            <li><router-link to="/privacy" class="hover:text-white transition-colors">Privacy Policy</router-link></li>
+            <li><router-link to="/terms" class="hover:text-white transition-colors">Terms &amp; Conditions</router-link></li>
+            <li><router-link to="/privacy" class="hover:text-white transition-colors">Cookie Policy</router-link></li>
+            <li><router-link to="/terms" class="hover:text-white transition-colors">Refund Policy</router-link></li>
+            <li><router-link to="/terms" class="hover:text-white transition-colors">Acceptable Use Policy</router-link></li>
           </ul>
         </div>
       </div>

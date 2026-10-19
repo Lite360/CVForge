@@ -13,6 +13,16 @@ const routes = [
     name: 'PublicCV',
     component: () => import('@/pages/public/PublicCVPage.vue')
   },
+  {
+    path: '/privacy',
+    name: 'PrivacyPolicy',
+    component: () => import('@/pages/public/PrivacyPolicyPage.vue')
+  },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: () => import('@/pages/public/TermsPage.vue')
+  },
 
   // ─── Auth ──────────────────────────────────
   {
