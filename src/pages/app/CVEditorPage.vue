@@ -49,30 +49,44 @@
           <!-- Template Selection Drawer / Dropdown -->
           <div 
             v-if="showTemplateDropdown" 
-            class="fixed inset-x-0 bottom-0 max-h-[75vh] sm:max-h-96 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-full sm:w-64 bg-white dark:bg-dark-card border-t sm:border border-neutral-200 dark:border-dark-border rounded-t-2xl sm:rounded-xl shadow-2xl z-50 p-3 sm:p-2 space-y-1 overflow-y-auto"
+            class="fixed inset-x-0 bottom-0 max-h-[75vh] sm:max-h-[28rem] sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-full sm:w-80 bg-white dark:bg-dark-card border-t sm:border border-neutral-200 dark:border-dark-border rounded-t-2xl sm:rounded-xl shadow-2xl z-50 p-3 sm:p-3 space-y-1 overflow-y-auto"
           >
             <div class="flex items-center justify-between sm:justify-start px-3 py-1.5 border-b border-neutral-100 dark:border-dark-border sm:border-0">
-              <span class="text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-500 sm:text-neutral-400">Select Template Format</span>
+              <span class="text-[11px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-500 sm:text-neutral-400">Choose Your Template</span>
               <button @click="showTemplateDropdown = false" class="sm:hidden text-neutral-400 hover:text-neutral-600 p-1">
                 <X class="w-4 h-4" />
               </button>
             </div>
 
-            <div class="space-y-1 pt-1">
+            <div class="space-y-2 pt-2">
               <button
                 v-for="tmpl in templateStore.templates"
                 :key="tmpl.id"
                 @click="changeTemplate(tmpl.id)"
-                :class="[cv.templateId === tmpl.id ? 'bg-orange-50 dark:bg-brand-orange/10 text-brand-orange font-bold' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-secondary']"
-                class="w-full text-left px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-lg text-xs flex items-center justify-between transition-colors"
+                :class="[cv.templateId === tmpl.id ? 'ring-2 ring-brand-orange bg-orange-50 dark:bg-brand-orange/10' : 'hover:bg-neutral-50 dark:hover:bg-dark-secondary border border-neutral-200 dark:border-dark-border']"
+                class="w-full text-left rounded-xl overflow-hidden transition-all duration-200"
               >
-                <div class="flex flex-col">
-                  <span>{{ tmpl.name }}</span>
-                  <span class="text-[10px] text-neutral-400 font-normal sm:hidden">{{ tmpl.features.slice(0, 2).join(' • ') }}</span>
+                <div class="flex gap-3 p-2.5">
+                  <!-- Template Preview Thumbnail -->
+                  <div class="shrink-0 w-16 h-20 sm:w-14 sm:h-[72px] rounded-lg overflow-hidden bg-neutral-100 dark:bg-dark-secondary border border-neutral-200 dark:border-dark-border shadow-sm">
+                    <img :src="tmpl.previewImage" :alt="tmpl.name" class="w-full h-full object-cover object-top" loading="lazy" />
+                  </div>
+                  <!-- Template Info -->
+                  <div class="flex-1 min-w-0 flex flex-col justify-center">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-bold text-neutral-900 dark:text-white truncate">{{ tmpl.name }}</span>
+                      <span class="shrink-0 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-neutral-200 dark:bg-dark-secondary text-neutral-600 dark:text-neutral-400 rounded">{{ tmpl.tag }}</span>
+                    </div>
+                    <span class="text-[10px] text-neutral-500 line-clamp-2 mt-0.5">{{ tmpl.description }}</span>
+                    <div v-if="cv.templateId === tmpl.id" class="flex items-center gap-1 mt-1">
+                      <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+                      <span class="text-[10px] font-bold text-brand-orange">Selected</span>
+                    </div>
+                  </div>
                 </div>
-                <Crown v-if="tmpl.isPremium" class="w-3.5 h-3.5 text-amber-500 shrink-0" />
               </button>
             </div>
+
           </div>
         </div>
 
@@ -392,8 +406,14 @@ const sections = [
 
 const currentTemplateName = computed(() => {
   const tmpl = templateStore.templates.find(t => t.id === cv.value.templateId)
-  return tmpl ? tmpl.name : 'Professional ATS'
+  return tmpl ? tmpl.name : 'Executive Modern'
 })
+
+const changeTemplate = (templateId: string) => {
+  cv.value.templateId = templateId
+  showTemplateDropdown.value = false
+  triggerAutosave()
+}
 
 onMounted(() => {
   cvStore.loadFromStorage()
@@ -401,7 +421,7 @@ onMounted(() => {
 
   if (cvId === 'new') {
     const templateQuery = route.query.template as string
-    const newCV = cvStore.createNewCV('My Professional CV', templateQuery || 'professional-ats')
+    const newCV = cvStore.createNewCV('My Professional CV', templateQuery || 'executive-modern')
     cv.value = {
       id: newCV.id,
       title: newCV.title,
@@ -417,7 +437,7 @@ onMounted(() => {
       cv.value = {
         id: existing.id,
         title: existing.title,
-        templateId: existing.templateId || 'professional-ats',
+        templateId: existing.templateId || 'executive-modern',
         basics: existing.personalInfo ? {
           name: existing.personalInfo.fullName,
           label: existing.personalInfo.jobTitle,

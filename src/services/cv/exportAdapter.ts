@@ -1,7 +1,7 @@
 import type { CVData } from '@/types/cv'
 import { cvTemplateAdapter } from './templateAdapter'
 
-export async function exportCVToPDF(cv: CVData, templateId: string = 'professional-ats'): Promise<void> {
+export async function exportCVToPDF(cv: CVData, templateId: string = 'executive-modern'): Promise<void> {
   const htmlContent = cvTemplateAdapter.renderHTML(cv, templateId)
   
   // Create offscreen container for html2pdf rendering
