@@ -409,12 +409,6 @@ const currentTemplateName = computed(() => {
   return tmpl ? tmpl.name : 'Executive Modern'
 })
 
-const changeTemplate = (templateId: string) => {
-  cv.value.templateId = templateId
-  showTemplateDropdown.value = false
-  triggerAutosave()
-}
-
 onMounted(() => {
   cvStore.loadFromStorage()
   const cvId = route.params.id as string
