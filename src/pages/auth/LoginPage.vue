@@ -140,6 +140,9 @@
         <a href="#" class="underline hover:text-neutral-600 transition">Terms</a> & 
         <a href="#" class="underline hover:text-neutral-600 transition">Privacy Policy</a>
       </p>
+
+      <!-- PRD §38: PWA Install Prompt displayed on Login screen -->
+      <PWAInstallPrompt />
     </div>
   </div>
 </template>
@@ -149,6 +152,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { FileText, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from '@lucide/vue'
+import PWAInstallPrompt from '@/components/PWAInstallPrompt.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
