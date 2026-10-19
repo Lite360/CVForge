@@ -82,6 +82,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/interview-prep',
+    name: 'InterviewPrep',
+    component: () => import('@/pages/app/InterviewPrepPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/templates',
     name: 'Templates',
     component: () => import('@/pages/app/TemplatesPage.vue'),
