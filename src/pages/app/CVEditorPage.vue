@@ -404,7 +404,7 @@ let autosaveTimer: any = null
 const triggerAutosave = () => {
   saveStatus.value = 'saving'
   clearTimeout(autosaveTimer)
-  autosaveTimer = setTimeout(() => {
+  autosaveTimer = setTimeout(async () => {
     if (cv.value.id) {
       const idx = cvStore.cvList.findIndex(c => c.id === cv.value.id)
       if (idx !== -1) {
@@ -422,9 +422,26 @@ const triggerAutosave = () => {
         }
         cvStore.saveToStorage()
       }
+
+      // Sync with serverless /api/cvs if available
+      try {
+        await fetch('/api/cvs?action=save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: cv.value.id,
+            title: cv.value.title,
+            templateId: cv.value.templateId,
+            content: cv.value,
+            status: 'draft'
+          })
+        })
+      } catch (err) {
+        console.warn('Autosave sync to server deferred:', err)
+      }
     }
     saveStatus.value = 'saved'
-  }, 800)
+  }, 1000)
 }
 
 function changeTemplate(templateId: string) {

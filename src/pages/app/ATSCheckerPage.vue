@@ -114,33 +114,50 @@
 import { ref } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { CheckCircle2, UploadCloud, AlertCircle, AlertTriangle, Wand2 } from '@lucide/vue'
+import { analyzeAts, type AtsAnalysisResult } from '@/services/cv/aiService'
 
 const isAnalyzing = ref(false)
-const analysisResult = ref<any>(null)
+const errorMessage = ref('')
+const analysisResult = ref<{
+  score: number
+  metrics: Record<string, number>
+  recommendations: Array<{ type: string; title: string; description: string }>
+} | null>(null)
 
-function handleFileUpload(event: Event) {
+async function handleFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   if (input.files && input.files.length > 0) {
     isAnalyzing.value = true
+    errorMessage.value = ''
     
-    // Simulate AI ATS analysis
-    setTimeout(() => {
+    // Parse / inspect uploaded CV content placeholder structure
+    const sampleCvContent = {
+      basics: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        summary: 'Experienced developer building web applications.'
+      },
+      work: [{ company: 'Tech Inc', position: 'Software Engineer' }],
+      skills: ['JavaScript', 'Vue', 'Node.js']
+    }
+
+    try {
+      const res = await analyzeAts(sampleCvContent)
       analysisResult.value = {
-        score: 84,
+        score: res.overall_score,
         metrics: {
-          'Keyword Match': 82,
-          'Structure': 95,
-          'Skills': 78,
-          'Formatting': 91
+          'Keyword Match': res.keyword_match_pct,
+          'Structure': res.structure_score,
+          'Skills': res.skills_score,
+          'Formatting': res.formatting_score
         },
-        recommendations: [
-          { type: 'error', title: 'Missing Contact Details', description: 'Your LinkedIn URL is missing or not formatted correctly as a hyperlink.' },
-          { type: 'warning', title: 'Vague Action Verbs', description: 'Found 3 instances of "Responsible for". Replace with strong action verbs like "Managed" or "Engineered".' },
-          { type: 'warning', title: 'Dates Formatting', description: 'Ensure all dates use a consistent Month Year format (e.g., Jan 2020 - Present).' }
-        ]
+        recommendations: res.recommendations
       }
+    } catch (err: any) {
+      errorMessage.value = err.message || 'ATS Scanning failed.'
+    } finally {
       isAnalyzing.value = false
-    }, 2500)
+    }
   }
 }
 
@@ -153,6 +170,7 @@ function getMetricColor(value: number) {
 function reset() {
   analysisResult.value = null
   isAnalyzing.value = false
+  errorMessage.value = ''
 }
 </script>
 

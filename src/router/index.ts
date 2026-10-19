@@ -76,6 +76,7 @@ const routes = [
   // ─── Admin ─────────────────────────────────
   {
     path: '/access',
+    alias: '/access/login',
     name: 'AdminLogin',
     component: () => import('@/pages/admin/AdminLoginPage.vue')
   },

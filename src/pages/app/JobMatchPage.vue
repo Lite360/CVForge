@@ -122,41 +122,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Target, FileText, Loader2, CheckCircle2, AlertCircle, Wand2 } from '@lucide/vue'
+import { matchJobDescription, type JobMatchResult } from '@/services/cv/aiService'
 
 const selectedCvId = ref('')
 const jobDescription = ref('')
 const isAnalyzing = ref(false)
-const matchResult = ref<any>(null)
+const errorMessage = ref('')
+const matchResult = ref<JobMatchResult | null>(null)
 
-// Mock CVs
 const cvs = ref([
-  { id: '1', title: 'Senior Software Engineer CV', lastUpdated: '2 hours ago' },
-  { id: '2', title: 'Product Manager Resume 2026', lastUpdated: 'Yesterday' }
+  { id: '1', title: 'Senior Software Engineer CV', lastUpdated: '2 hours ago', content: { basics: { summary: 'Senior software developer with Vue, TypeScript, Node.js experience' }, skills: ['Vue', 'TypeScript', 'Node.js', 'REST API'] } },
+  { id: '2', title: 'Product Manager Resume 2026', lastUpdated: 'Yesterday', content: { basics: { summary: 'Experienced product manager leading cross-functional teams' }, skills: ['Agile', 'Scrum', 'Product Strategy'] } }
 ])
 
-function analyzeMatch() {
+onMounted(() => {
+  if (cvs.value.length > 0) {
+    selectedCvId.value = cvs.value[0].id
+  }
+})
+
+async function analyzeMatch() {
   if (!selectedCvId.value || !jobDescription.value.trim()) return
   
   isAnalyzing.value = true
+  errorMessage.value = ''
   matchResult.value = null
   
-  // Simulate AI Job Match analysis
-  setTimeout(() => {
-    matchResult.value = {
-      score: 74,
-      matching: ['TypeScript', 'Vue.js', 'Node.js', 'Agile', 'REST APIs'],
-      missing: ['GraphQL', 'AWS', 'Docker', 'CI/CD Pipelines'],
-      suggestions: [
-        'Highlight your experience with deployment processes to compensate for missing Docker/AWS keywords.',
-        'The job emphasizes "leadership" 4 times. Ensure your recent role highlights mentoring or leading initiatives.',
-        'Add any experience you have with GraphQL to the Skills section.'
-      ]
-    }
+  const selectedCv = cvs.value.find(c => c.id === selectedCvId.value)
+  const cvContent = selectedCv ? selectedCv.content : { basics: { summary: 'Sample CV Content' } }
+
+  try {
+    const res = await matchJobDescription(cvContent, jobDescription.value)
+    matchResult.value = res
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Job match analysis failed.'
+  } finally {
     isAnalyzing.value = false
-  }, 3000)
+  }
 }
 </script>
 

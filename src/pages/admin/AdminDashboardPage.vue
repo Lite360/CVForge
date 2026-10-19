@@ -439,12 +439,38 @@ const toggleUserStatus = (id: string) => {
   users.value = adminMockService.toggleUserStatus(id)
 }
 
-const toggleTemplateActive = (id: string) => {
+const toggleTemplateActive = async (id: string) => {
   templates.value = adminMockService.toggleTemplateActive(id)
+  const target = templates.value.find(t => t.id === id)
+  try {
+    await fetch('/api/admin?action=toggle_template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: id,
+        isActive: target?.isActive
+      })
+    })
+  } catch (err) {
+    console.warn('Deferred admin template sync:', err)
+  }
 }
 
-const toggleTemplatePremium = (id: string) => {
+const toggleTemplatePremium = async (id: string) => {
   templates.value = adminMockService.toggleTemplatePremium(id)
+  const target = templates.value.find(t => t.id === id)
+  try {
+    await fetch('/api/admin?action=toggle_template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: id,
+        isPremium: target?.isPremium
+      })
+    })
+  } catch (err) {
+    console.warn('Deferred admin template sync:', err)
+  }
 }
 
 const refreshData = () => {

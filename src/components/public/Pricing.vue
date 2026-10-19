@@ -86,9 +86,14 @@
           </div>
 
           <div class="pt-8">
-            <router-link to="/dashboard" class="w-full block text-center py-3 px-4 bg-brand-orange hover:bg-brand-orange-hover rounded-xl text-sm font-semibold text-white shadow-md transition-colors">
+            <button 
+              @click="handleCheckout('monthly')"
+              :disabled="loadingPlan === 'monthly'"
+              class="w-full flex items-center justify-center gap-2 text-center py-3 px-4 bg-brand-orange hover:bg-brand-orange-hover rounded-xl text-sm font-semibold text-white shadow-md transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Loader2 v-if="loadingPlan === 'monthly'" class="w-4 h-4 animate-spin" />
               Upgrade to Premium
-            </router-link>
+            </button>
           </div>
         </div>
 
@@ -123,9 +128,14 @@
           </div>
 
           <div class="pt-8">
-            <router-link to="/dashboard" class="w-full block text-center py-3 px-4 border border-neutral-300 dark:border-dark-border rounded-xl text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary transition-colors">
+            <button 
+              @click="handleCheckout('yearly')"
+              :disabled="loadingPlan === 'yearly'"
+              class="w-full flex items-center justify-center gap-2 text-center py-3 px-4 border border-neutral-300 dark:border-dark-border rounded-xl text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Loader2 v-if="loadingPlan === 'yearly'" class="w-4 h-4 animate-spin" />
               Get Yearly Plan
-            </router-link>
+            </button>
           </div>
         </div>
 
@@ -136,5 +146,30 @@
 </template>
 
 <script setup lang="ts">
-import { Check, X } from '@lucide/vue'
+import { ref } from 'vue'
+import { Check, X, Loader2 } from '@lucide/vue'
+import { initializePaystackPayment } from '@/services/paymentService'
+
+const loadingPlan = ref<string | null>(null)
+
+async function handleCheckout(planId: 'monthly' | 'yearly') {
+  loadingPlan.value = planId
+  try {
+    const res = await initializePaystackPayment({
+      planId,
+      email: 'user@example.com',
+      callbackUrl: `${window.location.origin}/profile?payment=success`
+    })
+
+    if (res.status && res.data?.authorization_url) {
+      window.location.href = res.data.authorization_url
+    } else {
+      alert(res.error || res.message || 'Payment initialization failed')
+    }
+  } catch (err: any) {
+    alert(err.message || 'Payment process encountered an error')
+  } finally {
+    loadingPlan.value = null
+  }
+}
 </script>

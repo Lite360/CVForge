@@ -127,6 +127,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ users })
     }
 
+    // Toggle template active / premium state
+    if (action === 'toggle_template') {
+      const { templateId, isPremium, isActive } = req.body || {}
+      if (!templateId) {
+        return res.status(400).json({ error: 'templateId is required' })
+      }
+
+      await pool.query(
+        `UPDATE templates 
+         SET is_premium = COALESCE($1, is_premium),
+             is_active = COALESCE($2, is_active)
+         WHERE id = $3`,
+        [isPremium, isActive, templateId]
+      )
+
+      return res.status(200).json({ success: true, message: 'Template updated successfully' })
+    }
+
+    // Dynamic CMS Site Settings
+    if (action === 'cms') {
+      if (req.method === 'POST') {
+        const { siteName, heroTitle, heroSubtitle, announcements } = req.body || {}
+        await pool.query(
+          `INSERT INTO branding_settings (id, site_name, updated_at)
+           VALUES (1, $1, CURRENT_TIMESTAMP)
+           ON CONFLICT (id) DO UPDATE 
+           SET site_name = EXCLUDED.site_name, updated_at = CURRENT_TIMESTAMP`,
+          [siteName || 'CVForge']
+        )
+        return res.status(200).json({ success: true, message: 'Site CMS settings saved' })
+      }
+
+      const cmsRes = await pool.query(`SELECT * FROM branding_settings WHERE id = 1`)
+      return res.status(200).json({ success: true, data: cmsRes.rows[0] || {} })
+    }
+
+    // Audit logs
+    if (action === 'audit_logs') {
+      const auditRes = await pool.query(
+        `SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 50`
+      )
+      return res.status(200).json({ success: true, logs: auditRes.rows })
+    }
+
     return res.status(400).json({ error: 'Invalid action parameter' })
 
   } catch (error: any) {

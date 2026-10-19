@@ -11,6 +11,7 @@ export class DefaultCVTemplateAdapter implements CVTemplateAdapter {
     const work = cv.work || []
     const education = cv.education || []
     const skills = cv.skills || []
+    const isExecutive = templateId === 'executive'
 
     return `
 <!DOCTYPE html>

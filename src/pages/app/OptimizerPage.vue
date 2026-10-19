@@ -28,8 +28,16 @@
           <p class="text-xs text-neutral-400 mt-2">Supported formats: PDF, DOCX (Max size 5MB)</p>
         </div>
         
+        <input 
+          ref="fileInputRef" 
+          type="file" 
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+          class="hidden" 
+          @change="handleFileUpload" 
+        />
+        
         <div class="pt-4">
-          <button @click="simulateAnalysis" class="px-6 py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-sm font-semibold rounded-xl shadow-md transition">
+          <button @click="triggerFileInput" class="px-6 py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-sm font-semibold rounded-xl shadow-md transition">
             Select CV File
           </button>
         </div>
@@ -114,31 +122,86 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Sparkles, UploadCloud, Wand2, ArrowRight, Check, X } from '@lucide/vue'
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploadedFileName = ref('')
+const extractedCV = ref<any>(null)
+const overallScore = ref(84)
+const isAnalyzing = ref(false)
 
-const router = useRouter()
-const step = ref<'upload' | 'analyzing' | 'report'>('upload')
+const triggerFileInput = () => {
+  fileInputRef.value?.click()
+}
 
-const suggestions = ref([
-  {
-    section: 'Professional Summary',
-    reason: 'Weak action verbs & missing keywords',
-    original: 'Responsible for managing customers and solving technical problems.',
-    suggested: 'Managed customer inquiries and resolved complex technical service issues while maintaining high customer satisfaction ratings.'
-  },
-  {
-    section: 'Work Experience — Bullet #1',
-    reason: 'Needs measurable achievements',
-    original: 'Built front-end components using Vue.js for our core web app.',
-    suggested: 'Architected responsive Vue.js frontend components, reducing page load times by 35% across core user workflows.'
-  }
-])
+const handleFileUpload = async (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
-const simulateAnalysis = () => {
+  uploadedFileName.value = file.name
   step.value = 'analyzing'
-  setTimeout(() => {
+  isAnalyzing.value = true
+
+  try {
+    // 1. Read file as base64
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const base64 = reader.result as string
+
+      // 2. Extract content from backend
+      const extractRes = await fetch('/api/upload-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileBase64: base64,
+          filename: file.name,
+          mimeType: file.type
+        })
+      })
+
+      const extractData = await extractRes.json()
+      extractedCV.value = extractData.extractedContent || {}
+
+      // 3. Request AI suggestions from dual Gemini / OpenRouter service
+      const aiRes = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cvContent: extractedCV.value,
+          targetJob: 'Target Role'
+        })
+      })
+
+      const aiData = await aiRes.json()
+      if (aiData.success && aiData.data) {
+        overallScore.value = aiData.data.overall_score || 85
+        if (aiData.data.summary) {
+          suggestions.value = [
+            {
+              section: 'Professional Summary',
+              reason: aiData.data.summary.reason || 'Stronger action verbs and measurable impact',
+              original: aiData.data.summary.original,
+              suggested: aiData.data.summary.suggested
+            },
+            ...(aiData.data.experience_suggestions || []).map((exp: any, i: number) => ({
+              section: `Work Experience — Role #${i + 1}`,
+              reason: exp.reason || 'Added quantifiable business metrics',
+              original: exp.original,
+              suggested: exp.suggested
+            }))
+          ]
+        }
+      }
+
+      step.value = 'report'
+      isAnalyzing.value = false
+    }
+
+    reader.readAsDataURL(file)
+  } catch (err) {
+    console.warn('Real AI extraction fallback:', err)
     step.value = 'report'
-  }, 2000)
+    isAnalyzing.value = false
+  }
 }
 
 const createOptimizedCV = () => {

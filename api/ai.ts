@@ -1,8 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { checkRateLimit } from './rateLimiter'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Rate Limiting (PRD §54: strict limits on AI endpoints)
+  const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || 'unknown'
+  const limitCheck = checkRateLimit(`ai_${clientIp}`, { windowMs: 60 * 1000, maxRequests: 15 })
+
+  if (!limitCheck.allowed) {
+    return res.status(429).json({
+      error: 'Too many AI requests. Please slow down.',
+      resetInSeconds: limitCheck.resetInSec
+    })
   }
 
   const { cvContent, targetJob } = req.body || {}

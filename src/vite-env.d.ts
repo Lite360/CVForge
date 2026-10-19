@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
@@ -8,3 +10,9 @@ declare module 'html2pdf.js' {
   const html2pdf: any
   export default html2pdf
 }
+
+declare module '*.css' {
+  const content: string
+  export default content
+}
+

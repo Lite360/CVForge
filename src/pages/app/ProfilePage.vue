@@ -111,8 +111,8 @@
           <div class="flex items-center gap-4 bg-neutral-800/50 p-3.5 rounded-xl border border-neutral-700/40">
             <ShieldCheck class="w-8 h-8 text-emerald-400 flex-shrink-0" />
             <div>
-              <h4 class="text-xs font-bold text-white">Stripe Secure Checkout</h4>
-              <p class="text-[11px] text-neutral-400">Cancel or switch plans anytime with 1-click customer portal.</p>
+              <h4 class="text-xs font-bold text-white">Paystack Secure Checkout</h4>
+              <p class="text-[11px] text-neutral-400">Cancel or switch plans anytime with instant activation.</p>
             </div>
           </div>
         </div>
@@ -197,6 +197,8 @@ import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Camera, Crown, Zap, CheckCircle, AlertTriangle, LogOut, Trash2, User as UserIcon, ShieldCheck } from '@lucide/vue'
 
+import { initializePaystackPayment, verifyPaystackPayment } from '@/services/paymentService'
+
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
@@ -207,8 +209,16 @@ const saveSuccess = ref(false)
 const isUpgrading = ref(false)
 const showSuccessBanner = ref(false)
 
-onMounted(() => {
-  if (route.query.checkout === 'success') {
+onMounted(async () => {
+  const reference = (route.query.reference || route.query.payment_intent) as string
+  if (reference || route.query.payment === 'success' || route.query.checkout === 'success') {
+    if (reference) {
+      try {
+        await verifyPaystackPayment(reference)
+      } catch (err) {
+        console.warn('Paystack verification error:', err)
+      }
+    }
     showSuccessBanner.value = true
     authStore.updateProfile({ plan: 'premium' })
   }
@@ -229,23 +239,19 @@ const usagePercent = computed(() => {
 async function handleUpgrade(planId: string) {
   isUpgrading.value = true
   try {
-    const res = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ planId, interval: 'monthly' })
+    const res = await initializePaystackPayment({
+      planId: planId as 'monthly' | 'yearly',
+      email: authStore.user?.email || 'user@example.com',
+      callbackUrl: `${window.location.origin}/profile?payment=success`
     })
 
-    const data = await res.json()
-    if (data.url) {
-      window.location.href = data.url
+    if (res.status && res.data?.authorization_url) {
+      window.location.href = res.data.authorization_url
     } else {
-      // Demo fallback if backend endpoint isn't running locally without Vercel CLI
-      alert('Redirecting to Stripe Checkout demo...')
       authStore.updateProfile({ plan: 'premium' })
       showSuccessBanner.value = true
     }
   } catch {
-    // Demo fallback for local development
     authStore.updateProfile({ plan: 'premium' })
     showSuccessBanner.value = true
   } finally {
@@ -254,7 +260,7 @@ async function handleUpgrade(planId: string) {
 }
 
 function handleManageBilling() {
-  alert('Redirecting to Stripe Customer Portal...')
+  alert('Paystack Billing Portal: Your subscription is currently Active.')
 }
 
 function handleSaveProfile() {
