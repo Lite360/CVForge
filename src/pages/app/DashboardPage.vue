@@ -18,8 +18,8 @@
         </div>
       </div>
 
-      <!-- Quick Action Cards Grid (PRD #10) -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <!-- Quick Action Cards Grid (PRD #10 & #59) -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <button @click="handleCreateCV" class="text-left p-5 bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border hover:border-brand-orange transition-all group">
           <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-brand-orange/10 text-brand-orange flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
             <Plus class="w-5 h-5" />
@@ -50,6 +50,14 @@
           </div>
           <h3 class="font-bold text-sm text-neutral-900 dark:text-white">Match to Job</h3>
           <p class="text-xs text-neutral-500 mt-0.5">Tailor for job post</p>
+        </router-link>
+
+        <router-link to="/cover-letter" class="p-5 bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border hover:border-rose-500 transition-all group col-span-2 md:col-span-1">
+          <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-500/10 text-rose-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <Sparkles class="w-5 h-5" />
+          </div>
+          <h3 class="font-bold text-sm text-neutral-900 dark:text-white">Cover Letter</h3>
+          <p class="text-xs text-neutral-500 mt-0.5">AI tailored letter</p>
         </router-link>
       </div>
 
@@ -126,7 +134,7 @@ import { useRouter } from 'vue-router'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCVStore } from '@/stores/cv'
-import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Trash2 } from '@lucide/vue'
+import { Plus, Wand2, CheckCircle2, Target, FileText, Copy, Trash2, Sparkles } from '@lucide/vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -76,6 +76,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/cover-letter',
+    name: 'CoverLetter',
+    component: () => import('@/pages/app/CoverLetterPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/templates',
     name: 'Templates',
     component: () => import('@/pages/app/TemplatesPage.vue'),
