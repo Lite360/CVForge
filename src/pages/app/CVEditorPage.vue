@@ -2,10 +2,10 @@
   <div class="h-screen flex flex-col bg-neutral-100 dark:bg-dark-bg font-ui">
     
     <!-- Top Action Bar -->
-    <header class="bg-white dark:bg-dark-card border-b border-neutral-200 dark:border-dark-border px-4 py-3 flex items-center justify-between z-20 shadow-sm">
-      <div class="flex items-center gap-3">
-        <router-link to="/dashboard" title="Back to Dashboard" class="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-lg transition-colors">
-          <ArrowLeft class="w-5 h-5" />
+    <header class="bg-white dark:bg-dark-card border-b border-neutral-200 dark:border-dark-border px-3 sm:px-4 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-2 z-20 shadow-sm">
+      <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-[200px]">
+        <router-link to="/dashboard" title="Back to Dashboard" class="p-1.5 sm:p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-lg transition-colors">
+          <ArrowLeft class="w-4 sm:w-5 h-4 sm:h-5" />
         </router-link>
         
         <input 
@@ -13,29 +13,30 @@
           @input="triggerAutosave" 
           type="text" 
           placeholder="CV Title..."
-          class="font-bold text-base bg-transparent text-neutral-900 dark:text-white border-b border-transparent hover:border-neutral-300 focus:border-brand-orange focus:outline-none px-1 py-0.5"
+          class="font-bold text-sm sm:text-base bg-transparent text-neutral-900 dark:text-white border-b border-transparent hover:border-neutral-300 focus:border-brand-orange focus:outline-none px-1 py-0.5 max-w-[140px] sm:max-w-xs truncate"
         />
         
         <!-- Autosave Status Badge -->
-        <span class="inline-flex items-center gap-1.5 text-xs text-neutral-400 pl-3 border-l border-neutral-200 dark:border-dark-border">
+        <span class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-neutral-400 pl-2 sm:pl-3 border-l border-neutral-200 dark:border-dark-border">
           <span v-if="saveStatus === 'saving'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span v-else-if="saveStatus === 'saved'" class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span v-else class="w-2 h-2 rounded-full bg-red-500"></span>
-          <span class="capitalize">{{ saveStatus }}</span>
+          <span class="hidden sm:inline capitalize">{{ saveStatus }}</span>
         </span>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 sm:gap-3">
         <!-- Template Picker Dropdown -->
         <div class="relative">
           <button 
             @click="showTemplateDropdown = !showTemplateDropdown"
-            class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 transition"
+            class="px-2.5 sm:px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1 transition"
           >
-            <LayoutTemplate class="w-4 h-4 text-brand-orange" />
-            <span class="capitalize">{{ currentTemplateName }}</span>
-            <ChevronDown class="w-3.5 h-3.5 text-neutral-400" />
+            <LayoutTemplate class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-brand-orange" />
+            <span class="capitalize hidden md:inline">{{ currentTemplateName }}</span>
+            <span class="capitalize md:hidden">Template</span>
+            <ChevronDown class="w-3 h-3 text-neutral-400" />
           </button>
 
           <div 
@@ -56,32 +57,53 @@
           </div>
         </div>
 
-        <button @click="togglePreview" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 md:hidden">
-          <Eye class="w-4 h-4" /> {{ showMobilePreview ? 'Edit' : 'Preview' }}
+        <!-- Toggle Preview on Mobile -->
+        <button 
+          @click="togglePreview" 
+          :class="[showMobilePreview ? 'bg-brand-orange text-white' : 'border border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-neutral-200']"
+          class="px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 lg:hidden transition"
+        >
+          <Eye class="w-3.5 sm:w-4 h-3.5 sm:h-4" /> 
+          <span>{{ showMobilePreview ? 'Edit' : 'Preview' }}</span>
         </button>
 
-        <button @click="exportPDF" :disabled="isExporting" class="px-4 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
-          <Download v-if="!isExporting" class="w-4 h-4" />
-          <LoaderCircle v-else class="w-4 h-4 animate-spin" />
-          {{ isExporting ? 'Generating...' : 'Export PDF' }}
+        <button @click="exportPDF" :disabled="isExporting" class="px-3 sm:px-4 py-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait">
+          <Download v-if="!isExporting" class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          <LoaderCircle v-else class="w-3.5 sm:w-4 h-3.5 sm:h-4 animate-spin" />
+          <span class="hidden sm:inline">{{ isExporting ? 'Generating...' : 'Export PDF' }}</span>
+          <span class="sm:hidden">PDF</span>
         </button>
 
-        <button @click="openPublicShare" class="px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 transition">
-          <Share2 class="w-4 h-4 text-neutral-500" />
+        <button @click="openPublicShare" class="px-2.5 sm:px-3.5 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1 transition">
+          <Share2 class="w-3.5 sm:w-4 h-3.5 sm:h-4 text-neutral-500" />
           <span class="hidden sm:inline">Share</span>
         </button>
 
-        <button @click="exportDOCX" class="px-4 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary flex items-center gap-1.5 hidden sm:flex">
-          <FileText class="w-4 h-4" /> DOCX
+        <button @click="exportDOCX" class="px-3 py-1.5 border border-neutral-300 dark:border-dark-border rounded-lg text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-secondary items-center gap-1.5 hidden md:flex">
+          <FileText class="w-3.5 sm:w-4 h-3.5 sm:h-4" /> DOCX
         </button>
       </div>
     </header>
 
-    <!-- 3-Column Editor Layout (PRD #11) -->
+    <!-- Mobile Horizontal Section Tab Navigator (PRD §11) -->
+    <nav class="md:hidden flex items-center gap-1 overflow-x-auto px-3 py-2 bg-white dark:bg-dark-card border-b border-neutral-200 dark:border-dark-border scrollbar-none">
+      <button
+        v-for="section in sections"
+        :key="section.id"
+        @click="activeSection = section.id; showMobilePreview = false"
+        :class="[activeSection === section.id && !showMobilePreview ? 'bg-brand-orange text-white font-bold' : 'bg-neutral-100 dark:bg-dark-secondary text-neutral-600 dark:text-neutral-300']"
+        class="shrink-0 px-3 py-1.5 rounded-full text-xs flex items-center gap-1.5 transition"
+      >
+        <component :is="section.icon" class="w-3.5 h-3.5" />
+        <span>{{ section.name }}</span>
+      </button>
+    </nav>
+
+    <!-- Editor Main Layout -->
     <div class="flex-grow flex overflow-hidden">
       
-      <!-- Column 1: CV Navigation Sections Sidebar -->
-      <aside class="w-52 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-3 hidden md:flex flex-col gap-1 overflow-y-auto">
+      <!-- Column 1: CV Navigation Sections Sidebar (Desktop) -->
+      <aside class="w-52 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-3 hidden md:flex flex-col gap-1 overflow-y-auto shrink-0">
         <button 
           v-for="section in sections" 
           :key="section.id"
@@ -95,13 +117,13 @@
       </aside>
 
       <!-- Column 2: Form Input Editor -->
-      <main v-show="!showMobilePreview" class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-6 overflow-y-auto space-y-6">
+      <main v-show="!showMobilePreview" class="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-dark-card border-r border-neutral-200 dark:border-dark-border p-4 sm:p-6 overflow-y-auto space-y-6">
         
         <!-- Personal Information -->
         <div v-if="activeSection === 'personal'" class="space-y-4">
           <h2 class="text-lg font-bold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-dark-border pb-2">Personal Details</h2>
           
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-neutral-500 mb-1">Full Name:</label>
               <input v-model="cv.basics.name" @input="triggerAutosave" type="text" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -112,7 +134,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-neutral-500 mb-1">Email Address:</label>
               <input v-model="cv.basics.email" @input="triggerAutosave" type="email" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -123,7 +145,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium text-neutral-500 mb-1">Location:</label>
               <input v-model="cv.basics.location" @input="triggerAutosave" type="text" class="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -162,7 +184,7 @@
               </button>
             </div>
             
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-500 mb-1">Company:</label>
                 <input v-model="job.company" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -173,7 +195,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-500 mb-1">Start Date:</label>
                 <input v-model="job.startDate" @input="triggerAutosave" type="month" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -224,7 +246,7 @@
               </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-500 mb-1">Institution:</label>
                 <input v-model="edu.institution" @input="triggerAutosave" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
@@ -240,7 +262,7 @@
               <input v-model="edu.area" @input="triggerAutosave" type="text" placeholder="e.g. Computer Science" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-medium text-neutral-500 mb-1">Start Date:</label>
                 <input v-model="edu.startDate" @input="triggerAutosave" type="month" class="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-dark-border dark:bg-dark-bg focus:ring-1 focus:ring-brand-orange focus:outline-none" />
